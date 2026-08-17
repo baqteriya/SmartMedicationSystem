@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>My Medicines</title>
+</head>
+
+<body>
+
+<h2>Your Medicines</h2>
+
+<table border="1" cellpadding="10">
+
+    <tr>
+        <th>Name</th>
+        <th>Dosage</th>
+        <th>Time</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Action</th>
+    </tr>
+
+    <tr th:each="medicine : ${medicines}">
+
+        <td th:text="${medicine.medicineName}"></td>
+
+        <td th:text="${medicine.dosage}"></td>
+
+        <td th:text="${medicine.time}"></td>
+
+        <td th:text="${medicine.startDate}"></td>
+
+        <td th:text="${medicine.endDate}"></td>
+
+        <td>
+            <a th:href="@{/edit-medicine(id=${medicine.id})}">
+                Edit
+            </a>
+            |
+            <a th:href="@{/delete-medicine(id=${medicine.id})}">
+                Delete
+            </a>
+        </td>
+
+    </tr>
+
+</table>
+
+<br>
+
+<a href="/add-medicine">Add Another Medicine</a>
+
+<br><br>
+
+<a href="/dashboard">Back to Dashboard</a>
+
+</body>
+
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Medication History</title>
+</head>
+
+<body>
+
+<h2>Medication History</h2>
+
+<table border="1" cellpadding="10">
+
+    <tr>
+        <th>Medicine</th>
+        <th>Dosage</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+    </tr>
+
+    <tr th:each="log : ${logs}">
+
+        <td>
+            <span th:each="medicine : ${medicines}"
+                  th:if="${medicine.id == log.medicineId}"
+                  th:text="${medicine.medicineName}">
+            </span>
+        </td>
+
+        <td>
+            <span th:each="medicine : ${medicines}"
+                  th:if="${medicine.id == log.medicineId}"
+                  th:text="${medicine.dosage}">
+            </span>
+        </td>
+
+        <td th:text="${log.takenDate}"></td>
+
+        <td th:text="${log.takenTime}"></td>
+
+        <td th:text="${log.status}"></td>
+
+    </tr>
+
+</table>
+
+<br>
+
+<a href="/dashboard">Back to Dashboard</a>
+
+</body>
+
+</html>

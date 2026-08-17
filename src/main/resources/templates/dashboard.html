@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Dashboard - Smart Medication</title>
+
+
+    <script>
+
+        let notifiedMedicines = new Set();
+
+
+        // Ask notification permission
+
+        function requestNotificationPermission() {
+
+            if (!("Notification" in window)) {
+
+                console.log("Notifications are not supported.");
+
+                return;
+            }
+
+
+            if (Notification.permission === "default") {
+
+                Notification.requestPermission().then(function(permission) {
+
+                    console.log(
+                        "Notification permission:",
+                        permission
+                    );
+
+                });
+
+            }
+
+        }
+
+
+        // Check medicines
+
+        function checkMedicineReminder() {
+
+            if (!("Notification" in window)) {
+                return;
+            }
+
+
+            if (Notification.permission !== "granted") {
+                return;
+            }
+
+
+            const medicines =
+                document.querySelectorAll(".medicine-row");
+
+
+            medicines.forEach(function(row) {
+
+
+                const medicineId =
+                    row.getAttribute("data-id");
+
+
+                const medicineName =
+                    row.getAttribute("data-name");
+
+
+                const medicineStatus =
+                    row.getAttribute("data-status");
+
+
+                const medicineDue =
+                    row.getAttribute("data-due");
+
+
+                console.log(
+                    medicineName +
+                    " | " +
+                    medicineStatus +
+                    " | " +
+                    medicineDue
+                );
+
+
+                /*
+                 * Show notification only when:
+                 *
+                 * 1. Medicine is due
+                 * 2. Medicine is not taken
+                 * 3. Notification was not already shown
+                 */
+
+
+                if (
+                    medicineDue === "true" &&
+                    medicineStatus !== "TAKEN" &&
+                    !notifiedMedicines.has(medicineId)
+                ) {
+
+
+                    new Notification(
+                        "💊 Medicine Reminder",
+                        {
+                            body:
+                                medicineName +
+                                " is due. Please take your medicine."
+                        }
+                    );
+
+
+                    notifiedMedicines.add(
+                        medicineId
+                    );
+
+
+                    console.log(
+                        "Reminder shown for:",
+                        medicineName
+                    );
+
+                }
+
+            });
+
+        }
+
+
+        // Page loaded
+
+        window.onload = function() {
+
+
+            requestNotificationPermission();
+
+
+            /*
+             * Check immediately
+             */
+
+            setTimeout(function() {
+
+                checkMedicineReminder();
+
+            }, 1000);
+
+
+            /*
+             * Check every 30 seconds
+             */
+
+            setInterval(function() {
+
+                checkMedicineReminder();
+
+            }, 30000);
+
+        };
+
+    </script>
+
+</head>
+
+
+<body>
+
+
+<h2>
+    Smart Medication Management
+</h2>
+
+
+<h3>
+
+    Welcome,
+    <span th:text="${userName}"></span>
+    👋
+
+</h3>
+
+
+<hr>
+
+
+<h3>
+    Dashboard
+</h3>
+
+
+<a href="/add-medicine">
+    Add Medicine
+</a>
+
+
+<br>
+<br>
+
+
+<a href="/medicines">
+    View Medicines
+</a>
+
+
+<br>
+<br>
+
+
+<a href="/medication-history">
+    Medication History
+</a>
+
+
+<br>
+<br>
+
+<hr>
+
+
+<h3>
+    Your Medicines
+</h3>
+
+
+<table border="1" cellpadding="10">
+
+
+    <tr>
+
+        <th>Name</th>
+
+        <th>Dosage</th>
+
+        <th>Time</th>
+
+        <th>Start Date</th>
+
+        <th>End Date</th>
+
+        <th>Status</th>
+
+        <th>Reminder</th>
+
+    </tr>
+
+
+   <tr
+    th:each="medicine : ${medicines}"
+    class="medicine-row"
+    th:attr="
+        data-id=${medicine.id},
+        data-name=${medicine.medicineName},
+        data-status=${medicineStatus[medicine.id]},
+        data-due=${medicineDue[medicine.id]}
+    "
+>
+
+
+        <!-- Medicine Name -->
+
+        <td
+            th:text="${medicine.medicineName}">
+        </td>
+
+
+        <!-- Dosage -->
+
+        <td
+            th:text="${medicine.dosage}">
+        </td>
+
+
+        <!-- Time -->
+
+        <td
+            th:text="${medicine.time}">
+        </td>
+
+
+        <!-- Start Date -->
+
+        <td
+            th:text="${medicine.startDate}">
+        </td>
+
+
+        <!-- End Date -->
+
+        <td
+            th:text="${medicine.endDate}">
+        </td>
+
+
+        <!-- Status -->
+
+        <td>
+
+
+            <!-- TAKEN -->
+
+            <span
+                th:if="${medicineStatus[medicine.id] == 'TAKEN'}"
+            >
+
+                ✅ TAKEN
+
+            </span>
+
+
+            <!-- UPCOMING -->
+
+            <span
+                th:if="${medicineStatus[medicine.id] == 'UPCOMING'}"
+            >
+
+                🕐 UPCOMING
+
+                <br>
+
+
+                <a
+                    th:href="@{/mark-taken(medicineId=${medicine.id})}"
+                >
+
+                    Taken
+
+                </a>
+
+            </span>
+
+
+            <!-- MISSED -->
+
+            <span
+                th:if="${medicineStatus[medicine.id] == 'MISSED'}"
+            >
+
+                ❌ MISSED
+
+                <br>
+
+
+                <a
+                    th:href="@{/mark-taken(medicineId=${medicine.id})}"
+                >
+
+                    Taken
+
+                </a>
+
+            </span>
+
+
+        </td>
+
+
+        <!-- Reminder -->
+
+        <td>
+
+
+            <!-- Due -->
+
+            <span
+                th:if="${medicineDue[medicine.id]
+                        and medicineStatus[medicine.id] != 'TAKEN'}"
+            >
+
+                🔔 Medicine Due
+
+            </span>
+
+
+            <!-- Completed -->
+
+            <span
+                th:if="${medicineStatus[medicine.id] == 'TAKEN'}"
+            >
+
+                ✅ Completed
+
+            </span>
+
+
+            <!-- Waiting -->
+
+            <span
+                th:if="${!medicineDue[medicine.id]
+                        and medicineStatus[medicine.id] != 'TAKEN'}"
+            >
+
+                ⏳ Waiting
+
+            </span>
+
+
+        </td>
+
+
+    </tr>
+
+
+</table>
+
+
+<br>
+<br>
+
+
+<a href="/logout">
+    Logout
+</a>
+
+
+</body>
+
+</html>
